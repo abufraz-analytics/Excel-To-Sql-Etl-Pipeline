@@ -25,7 +25,7 @@ Once the automated pipeline securely deposits the records into the SQL repositor
 
 ##  Repository File Directory
 
-* 📄 **File Link:** `DUMMY DATA WITH ADVANCE VBA FOR SQL AND BI.xlsm`
+* 📄 **File Link:** [DUMMY DATA WITH ADVANCE VBA FOR SQL AND BI.xlsm](./DUMMY%20DATA%20WITH%20ADVANCE%20VBA%20FOR%20SQL%20AND%20BI.xlsm)
   > *This is the main structural workbook containing master financial ledgers and the macro-button interface.*
-* 📜 **Code Link:** `VBA CODE FOR CLEAN EXCEL SHEET & EXPORT TO SQL SERVER.txt`
+* 📜 **Code Link:** [VBA CODE FOR CLEAN EXCEL SHEET & EXPORT TO SQL SERVER.txt](./VBA%20CODE%20FOR%20CLEAN%20EXCEL%20SHEET%20&%20EXPORT%20TO%20SQL%20SERVER.txt)
   > *This is the VBA code that automatically cleans the Excel sheet data, exports the `.csv` file, and loads it directly into the SQL database server.*
