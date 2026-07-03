@@ -1,0 +1,73 @@
+Sub Final_Masterstroke_SQL()
+    Dim wsInput As Worksheet, wsOutput As Worksheet
+    Dim lastRow As Long, lastCol As Long
+    Dim filePath As String, fileName As String
+    Dim tempWB As Workbook
+    Dim conn As Object
+    Dim connString As String, sqlQuery As String
+    
+    ' Configurations
+    Set wsInput = ThisWorkbook.Sheets("WITH & WITHOUT INPUT")
+    Set wsOutput = ThisWorkbook.Sheets("WITH & WITHOUT OUTPUT")
+    filePath = "C:\SQLData\"
+    fileName = "WITH_WITHOUT_BILL.csv"
+    
+    ' 1. Folder check
+    If Dir(filePath, vbDirectory) = "" Then MkDir filePath
+    
+    ' 2. Data Cleaning & Formatting
+    wsOutput.Cells.Clear
+    lastRow = wsInput.Cells(wsInput.Rows.Count, "A").End(xlUp).Row
+    lastCol = wsInput.Cells(1, wsInput.Columns.Count).End(xlToLeft).Column
+    
+    ' Copying Values
+    wsInput.Range(wsInput.Cells(1, 1), wsInput.Cells(lastRow, lastCol)).Copy
+    wsOutput.Range("A1").PasteSpecial Paste:=xlPasteValues
+    
+    ' Date Format Fix (SQL needs YYYY-MM-DD)
+    wsOutput.Range("A2:A" & lastRow).NumberFormat = "yyyy-mm-dd"
+    
+    ' #DIV/0! aur baaki errors ko 0 karna
+    On Error Resume Next
+    wsOutput.UsedRange.SpecialCells(xlCellTypeConstants, xlErrors).Value = 0
+    On Error GoTo 0
+    
+    ' 3. Save as CSV (Silent)
+    Application.DisplayAlerts = False
+    Set tempWB = Workbooks.Add
+    wsOutput.Copy Before:=tempWB.Sheets(1)
+    Do While tempWB.Sheets.Count > 1: tempWB.Sheets(2).Delete: Loop
+    tempWB.SaveAs fileName:=filePath & fileName, FileFormat:=xlCSV, CreateBackup:=False
+    tempWB.Close SaveChanges:=False
+    
+    ' 4. SQL Automation (Connecting to abu_fraz)
+    On Error GoTo SQLError
+    Set conn = CreateObject("ADODB.Connection")
+    
+    ' Connection string with your exact details
+    connString = "Driver={PostgreSQL Unicode(x64)};Server=localhost;Port=5432;Database=abu_fraz;Uid=postgres;Pwd=123;"
+    
+    conn.Open connString
+    
+    ' Step A: Table ko khali karna
+    conn.Execute "TRUNCATE TABLE WITH_WITHOUT_BILL_data;"
+    
+    ' Step B: CSV se data load karna (Path slashes handle karke)
+    sqlQuery = "COPY WITH_WITHOUT_BILL_data FROM '" & Replace(filePath & fileName, "\", "/") & "' DELIMITER ',' CSV HEADER;"
+    conn.Execute sqlQuery
+    
+    conn.Close
+    Set conn = Nothing
+    Application.DisplayAlerts = True
+    
+    MsgBox "Data cleaning is complete and the SQL table is updated! You can now refresh Power BI. – Abu Fraz.", vbInformation, "Success"
+    Exit Sub
+
+SQLError:
+    MsgBox "SQL Error: " & Err.Description, vbCritical, "Database Error"
+    If Not conn Is Nothing Then If conn.State = 1 Then conn.Close
+    Application.DisplayAlerts = True
+End Sub
+
+
+
